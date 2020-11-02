@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"
+        p:placeholderPrefix="%{" p:placeholderSuffix="}" />
+
+    <bean class="net.shibboleth.idp.profile.impl.ProfileActionBeanPostProcessor" />
+    <bean class="net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor" />
+
+    <import resource="../../../conf/authn/totp-authn-config.xml" />
+
+    <bean id="SetRPUIInformation"
+            class="net.shibboleth.idp.ui.impl.SetRPUIInformation" scope="prototype"
+            p:httpServletRequest-ref="shibboleth.HttpServletRequest">
+        <property name="fallbackLanguages">
+            <bean parent="shibboleth.CommaDelimStringArray" c:_0="#{'%{idp.ui.fallbackLanguages:}'.trim()}" />
+        </property>
+    </bean>
+
+    <bean id="PreserveAuthenticationFlowState"
+        class="net.shibboleth.idp.authn.impl.PreserveAuthenticationFlowState" scope="prototype"
+        p:httpServletRequest-ref="shibboleth.HttpServletRequest"
+        p:parameterNames="#{getObject('shibboleth.authn.Password.ExtendedFlowParameters')}" />
+
+
+    <bean id="ExtractUsernameTotpAction"
+            class="com.sios.idp.shibboleth.authn.impl.ExtractUsernameTotpAction" scope="prototype"
+        p:httpServletRequest-ref="shibboleth.HttpServletRequest"
+        p:usernameFieldName-ref="com.sios.idp.shibboleth.authn.Totp.UsernameFieldName"
+        p:totpFieldName-ref="com.sios.idp.shibboleth.authn.Totp.TotpFieldName"
+        p:SSOBypassFieldName-ref="com.sios.idp.shibboleth.authn.Totp.SSOBypassFieldName"
+        p:TrustsTotpAuthnSessionFieldName-ref="com.sios.idp.shibboleth.authn.Totp.TrustsTotpAuthnSessionFieldName"
+        p:lowercase-ref="shibboleth.authn.Password.Lowercase"
+        p:uppercase-ref="shibboleth.authn.Password.Uppercase"
+        p:trim-ref="shibboleth.authn.Password.Trim"
+        p:transforms-ref="shibboleth.authn.Password.Transforms">
+    </bean>
+    <bean id="ValidateUsernameTotpAction"
+            class="com.sios.idp.shibboleth.authn.impl.ValidateUsernameTotpAction" scope="prototype"
+            p:httpServletRequest-ref="shibboleth.HttpServletRequest"
+            p:httpServletResponse-ref="shibboleth.HttpServletResponse"
+            p:loginConfigType="JavaLoginConfig"
+            p:totpJaasLoginConfigName-ref="com.sios.idp.shibboleth.authn.Totp.TotpJaasLoginConfigName"
+            p:addDefaultPrincipals="#{getObject('shibboleth.authn.Password.addDefaultPrincipals') ?:
+                (getObject('shibboleth.authn.Password.PrincipalOverride') == null
+                    or getObject('shibboleth.authn.Password.PrincipalOverride').isEmpty())}"
+            p:supportedPrincipals="#{getObject('shibboleth.authn.Password.PrincipalOverride')}"
+            p:classifiedMessages-ref="com.sios.idp.shibboleth.authn.Totp.ClassifiedMessageMap"
+            p:resultCachingPredicate="#{getObject('shibboleth.authn.Password.resultCachingPredicate')}">
+        <property name="loginConfigParameters">
+            <bean class="java.security.URIParameter">
+                <constructor-arg ref="com.sios.idp.shibboleth.authn.Totp.JAASConfigURI" />
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="PopulateSubjectCanonicalizationContext"
+        class="net.shibboleth.idp.authn.impl.PopulateSubjectCanonicalizationContext" scope="prototype"
+        p:availableFlows-ref="shibboleth.PostLoginSubjectCanonicalizationFlows" />
+</beans>

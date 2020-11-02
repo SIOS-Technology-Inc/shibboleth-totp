@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+
+       default-init-method="initialize"
+       default-destroy-method="destroy">
+
+    <import resource="jaas-authn-config-totp.xml" />
+
+
+    <!-- Names of form fields to pull username from. -->
+    <bean id="com.sios.idp.shibboleth.authn.Totp.UsernameFieldName" class="java.lang.String" c:_0="j_username" />
+    <bean id="com.sios.idp.shibboleth.authn.Totp.SSOBypassFieldName" class="java.lang.String" c:_0="donotcache" />
+
+    <!-- Names of form fields to pull onetime password form. -->
+    <bean id="com.sios.idp.shibboleth.authn.Totp.TotpFieldName" class="java.lang.String" c:_0="j_token" />
+    <bean id="com.sios.idp.shibboleth.authn.Totp.TrustsTotpAuthnSessionFieldName" class="java.lang.String" c:_0="truststotpauthnsession" />
+
+    <!-- Simple transforms to apply to username before validation. -->
+    <util:constant id="shibboleth.authn.Password.Lowercase" static-field="java.lang.Boolean.FALSE"/>
+    <util:constant id="shibboleth.authn.Password.Uppercase" static-field="java.lang.Boolean.FALSE"/>
+    <util:constant id="shibboleth.authn.Password.Trim" static-field="java.lang.Boolean.TRUE"/>
+
+
+    <!-- Apply any regular expression replacement pairs before validation. -->
+    <util:list id="shibboleth.authn.Password.Transforms">
+        <!--
+        <bean parent="shibboleth.Pair" p:first="^(.+)@example\.edu$" p:second="$1" />
+        -->
+    </util:list>
+
+    <!--
+    Define entries here to map error messages detected by validation actions and classify them as particular
+    kinds of errors for use in your templates and as events in flows.
+
+    Keys are events to signal, values are error codes.
+    -->
+    <util:map id="com.sios.idp.shibboleth.authn.Totp.ClassifiedMessageMap">
+        <entry key="UnknownUsername">
+            <list>
+                <value>NoCredentials</value>
+                <value>AuthenticationException</value>
+            </list>
+        </entry>
+    </util:map>
+
+</beans>
