@@ -1,0 +1,9 @@
+/.metadata/
+/bin/
+/.settings/
+/RemoteSystemsTempFiles/
+/coverage-report/*
+/coverage-report/
+/doc_*/
+/target/
+.DS_Store
