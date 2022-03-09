@@ -177,6 +177,11 @@
                 <enabled>false</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>middleware</id>
+            <name>Middleware Repository</name>
+            <url>https://git.it.vt.edu/middleware/maven-repo/raw/master</url>
+        </repository>
     </repositories>
 
     <dependencies>
